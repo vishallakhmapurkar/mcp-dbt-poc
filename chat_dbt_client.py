@@ -23,19 +23,19 @@ def handle_file_upload(file):
 def handle_yes(chat_history, spec):
     chat_history.append({"role": "user", "content": "Yes"})
     chat_history.append({"role": "assistant", "content": "🔄 Generating dbt model files..."})
-    yield chat_history, spec, gr.update(visible=True, interactive=False), gr.update(visible=True, interactive=False), gr.update(visible=True, value="🔄 Generating dbt model files..."), gr.update(visible=False), None
+    yield chat_history, spec, gr.update(visible=True, interactive=False), gr.update(visible=True, interactive=False), gr.update(visible=True, value="🔄 Generating dbt model files..."), gr.update(visible=False), file_input
 
     result = generate_dbt_files(spec)
     chat_history.append({"role": "assistant", "content": result})
-    yield chat_history, spec, gr.update(visible=True, interactive=False), gr.update(visible=True, interactive=False), gr.update(visible=True, value="📤 Pushing to GitHub..."), gr.update(visible=False), None
+    yield chat_history, spec, gr.update(visible=True, interactive=False), gr.update(visible=True, interactive=False), gr.update(visible=True, value="📤 Pushing to GitHub..."), gr.update(visible=False), file_input
 
     push_result = push_to_github()
     chat_history.append({"role": "assistant", "content": push_result})
-    yield chat_history, spec, gr.update(visible=True, interactive=False), gr.update(visible=True, interactive=False), gr.update(visible=True, value="🧪 Running dbt debug, run, docs generate, and test..."), gr.update(visible=False), None
+    yield chat_history, spec, gr.update(visible=True, interactive=False), gr.update(visible=True, interactive=False), gr.update(visible=True, value="🧪 Running dbt debug, run, docs generate, and test..."), gr.update(visible=False), file_input
 
     validate_result = validate_dbt()
     chat_history.append({"role": "assistant", "content": validate_result})
-    yield chat_history, None, gr.update(visible=False), gr.update(visible=False), gr.update(visible=False), gr.update(visible=True, interactive=True), None
+    yield chat_history, None, gr.update(visible=False), gr.update(visible=False), gr.update(visible=False), gr.update(visible=True, interactive=True), file_input
 
 def handle_no(chat_history):
     chat_history.append({"role": "user", "content": "No"})

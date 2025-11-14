@@ -1,0 +1,4 @@
+gradio
+gitpython
+dbt-core
+ollama

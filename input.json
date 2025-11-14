@@ -1,0 +1,10 @@
+{
+  "table_name": "orders",
+  "columns": {
+    "order_id": "INTEGER",
+    "customer_id": "INTEGER",
+    "order_date": "DATE",
+    "total_amount": "FLOAT"
+  },
+  "description": "Generate a dbt model that calculates monthly revenue per customer."
+}

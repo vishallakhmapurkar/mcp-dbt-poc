@@ -16,7 +16,7 @@ def handle_file_upload(file):
             gr.update(visible=True, interactive=True),  # no_btn
             gr.update(visible=False, value=""),         # status_box
             gr.update(visible=False, interactive=False),# restart_btn
-            None                                         # clear file input
+            file                                         # keep file visible
         )
     return chat_history, None, gr.update(visible=False), gr.update(visible=False), gr.update(visible=False), gr.update(visible=False), None
 
@@ -44,13 +44,13 @@ def handle_no(chat_history):
 
 def handle_restart():
     chat_history = [{"role": "assistant", "content": "👋 Welcome to the dbt Model Generator! Upload a JSON file to get started."}]
-    return chat_history, None, gr.update(visible=False), gr.update(visible=False), gr.update(visible=False), gr.update(visible=False), None
+    return chat_history, None, gr.update(visible=False), gr.update(visible=False), gr.update(visible=False, value=""), gr.update(visible=False, interactive=False), None
 
 with gr.Blocks() as demo:
     gr.Markdown("### 💬 dbt Model Generator Chat")
 
     chatbox = gr.Chatbot(label="Chat", type="messages")
-    file_input = gr.File(label="Upload JSON File")
+    file_input = gr.File(label="Upload JSON File", interactive=True)
     status_box = gr.Textbox(label="Processing Status", interactive=False, visible=False)
 
     yes_btn = gr.Button("Yes", variant="primary", visible=False)

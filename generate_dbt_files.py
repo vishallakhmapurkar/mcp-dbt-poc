@@ -2,7 +2,7 @@ import os
 import json
 from local_llm import generate_sql_model
 
-def generate_dbt_files(spec, output_dir="dbt_project/models"):
+def generate_dbt_files(spec, output_dir="dbt_project/models/example"):
     os.makedirs(output_dir, exist_ok=True)
     table = spec["table_name"]
     columns = spec["columns"]

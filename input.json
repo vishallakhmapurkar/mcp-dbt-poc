@@ -1,10 +1,33 @@
 {
-  "table_name": "orders",
-  "columns": {
-    "order_id": "INTEGER",
-    "customer_id": "INTEGER",
-    "order_date": "DATE",
-    "total_amount": "FLOAT"
-  },
-  "description": "Generate a dbt model that calculates monthly revenue per customer."
+  "source_name": "sales_data",
+  "tables": [
+    {
+      "name": "orders",
+      "columns": [
+        { "name": "order_id", "type": "integer" },
+        { "name": "customer_id", "type": "integer" },
+        { "name": "order_date", "type": "date" },
+        { "name": "total_amount", "type": "decimal" }
+      ]
+    },
+    {
+      "name": "customers",
+      "columns": [
+        { "name": "customer_id", "type": "integer" },
+        { "name": "first_name", "type": "string" },
+        { "name": "last_name", "type": "string" },
+        { "name": "email", "type": "string" },
+        { "name": "signup_date", "type": "date" }
+      ]
+    },
+    {
+      "name": "products",
+      "columns": [
+        { "name": "product_id", "type": "integer" },
+        { "name": "product_name", "type": "string" },
+        { "name": "category", "type": "string" },
+        { "name": "price", "type": "decimal" }
+      ]
+    }
+  ]
 }

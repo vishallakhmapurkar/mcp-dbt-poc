@@ -1,29 +1,43 @@
 import os
-import json
-from local_llm import generate_sql_model
 
-def generate_dbt_files(spec, output_dir="dbt_project/models/example"):
-    os.makedirs(output_dir, exist_ok=True)
-    table = spec["table_name"]
-    columns = spec["columns"]
-    description = spec["description"]
+def generate_dbt_files(spec, base_path="models"):
+    try:
+        os.makedirs(base_path, exist_ok=True)
 
-    prompt = f"Table: {table}\nColumns: {columns}\nTask: {description}"
-    sql_code = generate_sql_model(prompt)
+        # Create folders for staging and marts
+        staging_path = os.path.join(base_path, "staging")
+        marts_path = os.path.join(base_path, "marts")
+        os.makedirs(staging_path, exist_ok=True)
+        os.makedirs(marts_path, exist_ok=True)
 
-    with open(f"{output_dir}/{table}.sql", "w") as f:
-        f.write(sql_code)
+        source_name = spec.get("source_name", "source")
 
-    schema = {
-        "version": 2,
-        "models": [{
-            "name": table,
-            "description": description,
-            "columns": [{"name": col, "description": "Generated"} for col in columns]
-        }]
-    }
+        for table in spec.get("tables", []):
+            table_name = table["name"]
+            columns = table["columns"]
 
-    with open(f"{output_dir}/{table}_schema.yml", "w") as f:
-        json.dump(schema, f, indent=2)
+            # Generate staging model
+            staging_sql = f"""{{{{ config(materialized='view') }}}}
 
-    return f"✅ Generated {table}.sql and schema.yml"
+SELECT
+    {',\n    '.join([f"{col['name']} AS {col['name']}" for col in columns])}
+FROM {{{{ source('{source_name}', '{table_name}') }}}}
+"""
+            staging_file = os.path.join(staging_path, f"stg_{table_name}.sql")
+            with open(staging_file, "w") as f:
+                f.write(staging_sql.strip())
+
+            # Generate marts model
+            marts_sql = f"""{{{{ config(materialized='table') }}}}
+
+SELECT
+    *
+FROM {{ ref('stg_{table_name}') }}
+"""
+            marts_file = os.path.join(marts_path, f"{table_name}_mart.sql")
+            with open(marts_file, "w") as f:
+                f.write(marts_sql.strip())
+
+        return "✅ dbt model files generated using best practices."
+    except Exception as e:
+        return f"❌ Failed to generate dbt files: {str(e)}"

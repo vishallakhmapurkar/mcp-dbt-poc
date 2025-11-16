@@ -1,10 +1,10 @@
 import os
+import yaml
 
-def generate_dbt_files(spec, base_path="dbt_project/models"):
+def generate_dbt_files(spec):
     try:
-        os.makedirs(base_path, exist_ok=True)
-
-        # Create folders for staging and marts
+        project_path = spec.get("dbt_project", ".")
+        base_path = os.path.join(project_path, "models")
         staging_path = os.path.join(base_path, "staging")
         marts_path = os.path.join(base_path, "marts")
         os.makedirs(staging_path, exist_ok=True)
@@ -12,11 +12,19 @@ def generate_dbt_files(spec, base_path="dbt_project/models"):
 
         source_name = spec.get("source_name", "source")
 
+        # Collect schema.yml structure
+        schema_dict = {"version": 2, "sources": [], "models": []}
+        source_block = {
+            "name": source_name,
+            "schema": source_name,  # adjust if warehouse schema differs
+            "tables": []
+        }
+
         for table in spec.get("tables", []):
             table_name = table["name"]
             columns = table["columns"]
 
-            # Generate staging model
+            # --- Staging model ---
             staging_sql = f"""{{{{ config(materialized='view') }}}}
 
 SELECT
@@ -27,7 +35,7 @@ FROM {{{{ source('{source_name}', '{table_name}') }}}}
             with open(staging_file, "w") as f:
                 f.write(staging_sql.strip())
 
-            # Generate marts model
+            # --- Mart model ---
             marts_sql = f"""{{{{ config(materialized='table') }}}}
 
 SELECT
@@ -38,6 +46,18 @@ FROM {{ ref('stg_{table_name}') }}
             with open(marts_file, "w") as f:
                 f.write(marts_sql.strip())
 
-        return "✅ dbt model files generated using best practices."
+            # --- Add to schema.yml ---
+            source_block["tables"].append({"name": table_name})
+            schema_dict["models"].append({"name": f"stg_{table_name}", "description": f"Staging model for {table_name}"})
+            schema_dict["models"].append({"name": f"{table_name}_mart", "description": f"Mart model for {table_name}"})
+
+        schema_dict["sources"].append(source_block)
+
+        # Write schema.yml
+        schema_file = os.path.join(base_path, "schema.yml")
+        with open(schema_file, "w") as f:
+            yaml.dump(schema_dict, f, sort_keys=False)
+
+        return "✅ dbt models and schema.yml generated successfully."
     except Exception as e:
         return f"❌ Failed to generate dbt files: {str(e)}"

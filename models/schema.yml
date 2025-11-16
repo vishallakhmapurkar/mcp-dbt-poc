@@ -1,0 +1,21 @@
+version: 2
+sources:
+- name: sales_data
+  schema: sales_data
+  tables:
+  - name: orders
+  - name: customers
+  - name: products
+models:
+- name: stg_orders
+  description: Staging model for orders
+- name: orders_mart
+  description: Mart model for orders
+- name: stg_customers
+  description: Staging model for customers
+- name: customers_mart
+  description: Mart model for customers
+- name: stg_products
+  description: Staging model for products
+- name: products_mart
+  description: Mart model for products

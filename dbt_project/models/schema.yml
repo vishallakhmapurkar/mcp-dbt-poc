@@ -1,7 +1,7 @@
 version: 2
 sources:
-- name: sales_data
-  schema: sales_data
+- name: dbt_vlakhmapurkar
+  schema: dbt_vlakhmapurkar
   tables:
   - name: orders
   - name: customers

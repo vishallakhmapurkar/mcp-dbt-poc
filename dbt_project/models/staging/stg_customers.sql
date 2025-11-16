@@ -6,4 +6,4 @@ SELECT
     last_name AS last_name,
     email AS email,
     signup_date AS signup_date
-FROM {{ source('sales_data', 'customers') }}
+FROM {{ source('dbt_vlakhmapurkar', 'customers') }}

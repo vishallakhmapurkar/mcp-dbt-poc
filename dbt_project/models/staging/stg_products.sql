@@ -5,4 +5,4 @@ SELECT
     product_name AS product_name,
     category AS category,
     price AS price
-FROM {{ source('sales_data', 'products') }}
+FROM {{ source('dbt_vlakhmapurkar', 'products') }}

@@ -17,7 +17,7 @@ def generate_dbt_files(spec, base_path="dbt_project/models"):
         schema_dict = {"version": 2, "sources": [], "models": []}
         source_block = {
             "name": source_name,
-            "schema": source_name,  # adjust if warehouse schema differs
+            "schema": source_name,  # <-- warehouse schema name
             "tables": []
         }
 
@@ -67,6 +67,6 @@ FROM {{{{ ref('stg_{table_name}') }}}}
         with open(schema_file, "w") as f:
             yaml.dump(schema_dict, f, sort_keys=False)
 
-        return "✅ dbt models and schema.yml generated successfully."
+        return "✅ dbt models and schema.yml generated successfully with schema 'dbt_vlakhmapurkar'."
     except Exception as e:
         return f"❌ Failed to generate dbt files: {str(e)}"

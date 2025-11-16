@@ -1,5 +1,5 @@
 {
-  "source_name": "sales_data",
+  "source_name": "dbt_vlakhmapurkar",
   "tables": [
     {
       "name": "orders",

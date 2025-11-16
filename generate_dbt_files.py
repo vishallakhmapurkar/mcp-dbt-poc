@@ -1,6 +1,6 @@
 import os
 
-def generate_dbt_files(spec, base_path="models"):
+def generate_dbt_files(spec, base_path="dbt_project/models"):
     try:
         os.makedirs(base_path, exist_ok=True)
 

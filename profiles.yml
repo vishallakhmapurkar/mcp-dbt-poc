@@ -1,0 +1,12 @@
+dbt_poc:   # <-- must match the "profile" name in dbt_project.yml
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: service-account
+      project: dbt-hackathon-genai   # <-- your GCP project ID
+      dataset: dbt_vlakhmapurkar     # <-- your dataset/schema name
+      threads: 4
+      timeout_seconds: 300
+      location: US                   # <-- must match dataset location
+      keyfile: /path/to/your/service_account.json

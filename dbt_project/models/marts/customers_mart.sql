@@ -2,4 +2,4 @@
 
 SELECT
     *
-FROM { ref('stg_customers') }
+FROM {{ ref('stg_customers') }}

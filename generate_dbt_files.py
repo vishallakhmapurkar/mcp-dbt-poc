@@ -26,10 +26,11 @@ def generate_dbt_files(spec, base_path="dbt_project/models"):
             columns = table["columns"]
 
             # --- Staging model ---
-            staging_sql = f"""{{{{ config(materialized='view') }}}}
+            staging_sql = f"""
+{{{{ config(materialized='view') }}}}
 
 SELECT
-    {',\n    '.join([f"{col['name']} AS {col['name']}" for col in columns])}
+    {',\\n    '.join([f"{col['name']} AS {col['name']}" for col in columns])}
 FROM {{{{ source('{source_name}', '{table_name}') }}}}
 """
             staging_file = os.path.join(staging_path, f"stg_{table_name}.sql")
@@ -37,11 +38,12 @@ FROM {{{{ source('{source_name}', '{table_name}') }}}}
                 f.write(staging_sql.strip())
 
             # --- Mart model ---
-            marts_sql = f"""{{{{ config(materialized='table') }}}}
+            marts_sql = f"""
+{{{{ config(materialized='table') }}}}
 
 SELECT
     *
-FROM {{ ref('stg_{table_name}') }}
+FROM {{{{ ref('stg_{table_name}') }}}}
 """
             marts_file = os.path.join(marts_path, f"{table_name}_mart.sql")
             with open(marts_file, "w") as f:
@@ -49,8 +51,14 @@ FROM {{ ref('stg_{table_name}') }}
 
             # --- Add to schema.yml ---
             source_block["tables"].append({"name": table_name})
-            schema_dict["models"].append({"name": f"stg_{table_name}", "description": f"Staging model for {table_name}"})
-            schema_dict["models"].append({"name": f"{table_name}_mart", "description": f"Mart model for {table_name}"})
+            schema_dict["models"].append({
+                "name": f"stg_{table_name}",
+                "description": f"Staging model for {table_name}"
+            })
+            schema_dict["models"].append({
+                "name": f"{table_name}_mart",
+                "description": f"Mart model for {table_name}"
+            })
 
         schema_dict["sources"].append(source_block)
 

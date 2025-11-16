@@ -1,11 +1,10 @@
 import os
 import yaml
 
-def generate_dbt_files(spec, base_path="dbt_project/models"):
+def generate_dbt_files(spec):
     try:
-        os.makedirs(base_path, exist_ok=True)
-
-        # Create folders for staging and marts
+        project_path = spec.get("project_path", ".")
+        base_path = os.path.join(project_path, "models")
         staging_path = os.path.join(base_path, "staging")
         marts_path = os.path.join(base_path, "marts")
         os.makedirs(staging_path, exist_ok=True)
@@ -30,7 +29,7 @@ def generate_dbt_files(spec, base_path="dbt_project/models"):
 {{{{ config(materialized='view') }}}}
 
 SELECT
-    {',\\n    '.join([f"{col['name']} AS {col['name']}" for col in columns])}
+    {",\n    ".join([f"{col['name']} AS {col['name']}" for col in columns])}
 FROM {{{{ source('{source_name}', '{table_name}') }}}}
 """
             staging_file = os.path.join(staging_path, f"stg_{table_name}.sql")

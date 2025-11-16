@@ -1,10 +1,11 @@
 import os
 import yaml
 
-def generate_dbt_files(spec):
+def generate_dbt_files(spec, base_path="dbt_project/models"):
     try:
-        project_path = spec.get("dbt_project", ".")
-        base_path = os.path.join(project_path, "models")
+        os.makedirs(base_path, exist_ok=True)
+
+        # Create folders for staging and marts
         staging_path = os.path.join(base_path, "staging")
         marts_path = os.path.join(base_path, "marts")
         os.makedirs(staging_path, exist_ok=True)

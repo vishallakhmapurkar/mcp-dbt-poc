@@ -1,4 +1,6 @@
 gradio
 gitpython
 dbt-core
+dbt-bigquery
 ollama
+

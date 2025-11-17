@@ -1,12 +1,7 @@
 {{ config(materialized='view') }}
 
-"""
-assert dbutils.get_sql(models.sql_model("customers", "dbt_vlakhmapurkar")) == """SELECT customer_id AS column_0, first_name AS column_1, last_name AS column_2, email AS column_3, signup_date AS column_4 FROM customers"""
+from dbt import task
 
-"""
-Assert that dbt does not raise an exception when run against an invalid configuration.
-"""
-with_config = """{
-    "materialized": "view"
-}"""
-assert dbutils.validate_sql(models.sql_model("customers", "dbt_vlaghmapurkar", with_config)) is None
+with materialized='view' as (customer_id bigint, first_name text, last_name text, email text, signup_date timestamp):
+    sql:
+    "SELECT customer_id, first_name, last_name, email, signup_date FROM customers;"

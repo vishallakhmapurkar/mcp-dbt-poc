@@ -1,4 +1,2 @@
 {{ config(materialized='view') }}
 
-"""
-<s> #

@@ -16,12 +16,26 @@ def generate_sql_model(prompt: str, model: str = "sqlcoder:7b"):
     sql_code = result.stdout.decode("utf-8")
 
     # --- Cleanup step ---
-    sql_code = re.sub(r"```sql|```|`", "", sql_code)  # remove markdown fences/backticks
-    sql_code = sql_code.replace("{{{{", "{{").replace("}}}}", "}}")  # fix malformed braces
-    sql_code = sql_code.strip()
+    # Remove markdown fences/backticks
+    sql_code = re.sub(r"```sql|```|`", "", sql_code)
 
-    # 🚨 NEW: Remove stray leading dashes (markdown bullets)
+    # Fix malformed braces
+    sql_code = sql_code.replace("{{{{", "{{").replace("}}}}", "}}")
+
+    # Remove stray leading dashes (markdown bullets)
     sql_code = re.sub(r"^\s*-\s*", "", sql_code, flags=re.MULTILINE)
+
+    # Remove stray asterisks (markdown bullets)
+    sql_code = re.sub(r"^\s*\*\s*", "", sql_code, flags=re.MULTILINE)
+
+    # Remove headings (#, ##, ###)
+    sql_code = re.sub(r"^\s*#+\s*", "", sql_code, flags=re.MULTILINE)
+
+    # Remove triple quotes (Python-style docstrings)
+    sql_code = re.sub(r'"""|\'\'\'', '', sql_code)
+
+    # Strip whitespace
+    sql_code = sql_code.strip()
 
     # --- Jinja validation ---
     if "{{ config" not in sql_code:

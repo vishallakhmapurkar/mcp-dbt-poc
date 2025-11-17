@@ -5,7 +5,7 @@ import re
 
 def generate_sql_model(prompt: str, model: str = "sqlcoder:7b"):
     """
-    Calls Ollama with SQLCoder to generate SQL model code from a natural language prompt.
+    Calls Ollama via subprocess with SQLCoder to generate SQL model code.
     Cleans and validates the output before returning.
     """
     result = subprocess.run(
@@ -19,6 +19,9 @@ def generate_sql_model(prompt: str, model: str = "sqlcoder:7b"):
     sql_code = re.sub(r"```sql|```|`", "", sql_code)  # remove markdown fences/backticks
     sql_code = sql_code.replace("{{{{", "{{").replace("}}}}", "}}")  # fix malformed braces
     sql_code = sql_code.strip()
+
+    # 🚨 NEW: Remove stray leading dashes (markdown bullets)
+    sql_code = re.sub(r"^\s*-\s*", "", sql_code, flags=re.MULTILINE)
 
     # --- Jinja validation ---
     if "{{ config" not in sql_code:

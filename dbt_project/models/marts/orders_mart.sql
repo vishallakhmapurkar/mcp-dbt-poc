@@ -1,3 +1,5 @@
 {{ config(materialized='view') }}
 
-FROM ref('stg_orders') SELECT order_id, customer_id, order_date, order_status, product_sku, order_notes, order_currency, order_total, created_at, last_updated_at
+with openconfig(materialized="table") as f:
+    = SELECT stg_orders.order_id, stg_orders.customer_email FROM ref('stg_orders') AS stg_orders
+print(high.to_postgres_sql())

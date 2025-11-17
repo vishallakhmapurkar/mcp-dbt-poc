@@ -1,3 +1,11 @@
 {{ config(materialized='view') }}
 
-Model: [{ name: 'stg_products' }, { columns: ['product_id', 'category_id'] }]
+from __future__ import annotations
+from dbt.adsapper.generator import Generator
+import dbg
+
+@dbt.task()
+def products_sql():
+    dbt.config(materialized='table')
+    products_sql = select * from ref('stg_products')
+    return products_sql

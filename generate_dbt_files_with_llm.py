@@ -16,26 +16,17 @@ def generate_sql_model(prompt: str, model: str = "sqlcoder:7b"):
     sql_code = result.stdout.decode("utf-8")
 
     # --- Cleanup step ---
-    # Remove markdown fences/backticks
-    sql_code = re.sub(r"```sql|```|`", "", sql_code)
-
-    # Fix malformed braces
-    sql_code = sql_code.replace("{{{{", "{{").replace("}}}}", "}}")
-
-    # Remove stray leading dashes (markdown bullets)
-    sql_code = re.sub(r"^\s*-\s*", "", sql_code, flags=re.MULTILINE)
-
-    # Remove stray asterisks (markdown bullets)
-    sql_code = re.sub(r"^\s*\*\s*", "", sql_code, flags=re.MULTILINE)
-
-    # Remove headings (#, ##, ###)
-    sql_code = re.sub(r"^\s*#+\s*", "", sql_code, flags=re.MULTILINE)
-
-    # Remove triple quotes (Python-style docstrings)
-    sql_code = re.sub(r'"""|\'\'\'', '', sql_code)
-
-    # Strip whitespace
+# --- Cleanup step ---
+    sql_code = re.sub(r"```sql|```|`", "", sql_code)        # remove markdown fences/backticks
+    sql_code = sql_code.replace("{{{{", "{{").replace("}}}}", "}}")  # fix malformed braces
+    sql_code = re.sub(r"^\s*-\s*", "", sql_code, flags=re.MULTILINE) # remove dashes
+    sql_code = re.sub(r"^\s*\*\s*", "", sql_code, flags=re.MULTILINE) # remove asterisks
+    sql_code = re.sub(r"^\s*#+\s*", "", sql_code, flags=re.MULTILINE) # remove headings
+    sql_code = re.sub(r'"""|\'\'\'', '', sql_code)          # remove triple quotes
+    sql_code = re.sub(r"^\s*(task|note|example)\b.*", "", sql_code, flags=re.MULTILINE) # remove stray words
+    sql_code = re.sub(r";\s*$", "", sql_code, flags=re.MULTILINE) # remove trailing semicolons
     sql_code = sql_code.strip()
+
 
     # --- Jinja validation ---
     if "{{ config" not in sql_code:

@@ -1,6 +1,6 @@
 import gradio as gr
 import json
-from generate_dbt_files_with_llm import generate_dbt_files
+from generate_dbt_files import generate_dbt_files
 from push_to_github import push_to_github
 from validate_dbt import validate_dbt
 

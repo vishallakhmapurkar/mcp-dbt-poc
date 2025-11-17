@@ -3,9 +3,9 @@ import yaml
 import subprocess
 import re
 
-def generate_sql_model(prompt: str, model: str = "gemma"):
+def generate_sql_model(prompt: str, model: str = "sqlcoder:7b"):
     """
-    Calls Ollama with Gemma to generate SQL model code from a natural language prompt.
+    Calls Ollama with SQLCoder to generate SQL model code from a natural language prompt.
     Cleans and validates the output before returning.
     """
     result = subprocess.run(
@@ -16,17 +16,13 @@ def generate_sql_model(prompt: str, model: str = "gemma"):
     sql_code = result.stdout.decode("utf-8")
 
     # --- Cleanup step ---
-    # Remove markdown fences, stray backticks, triple quotes
-    sql_code = re.sub(r"```sql|```|`", "", sql_code)
-    # Normalize whitespace
+    sql_code = re.sub(r"```sql|```|`", "", sql_code)  # remove markdown fences/backticks
+    sql_code = sql_code.replace("{{{{", "{{").replace("}}}}", "}}")  # fix malformed braces
     sql_code = sql_code.strip()
 
     # --- Jinja validation ---
-    # Ensure config, source, and ref blocks are intact
     if "{{ config" not in sql_code:
         sql_code = "{{ config(materialized='view') }}\n\n" + sql_code
-    # Fix double braces if Gemma outputs malformed Jinja
-    sql_code = sql_code.replace("{{{{", "{{").replace("}}}}", "}}")
 
     return sql_code
 
@@ -47,22 +43,31 @@ def generate_dbt_files(spec, base_path="dbt_project/models"):
             table_name = table["name"]
             columns = table["columns"]
 
-            # --- Staging model via Gemma ---
+            # --- Staging model prompt (strict) ---
             staging_prompt = f"""
-Generate a dbt SQL staging model for table {table_name} with columns:
-{', '.join([c['name'] for c in columns])}.
-Use {{ config(materialized='view') }} and {{ source('{source_name}', '{table_name}') }}.
+Generate a dbt SQL staging model for table {table_name}.
+Requirements:
+- Use {{ config(materialized='view') }} at the top.
+- Select all columns: {', '.join([c['name'] for c in columns])}.
+- Source must be {{ source('{source_name}', '{table_name}') }}.
+- Output only valid BigQuery SQL compatible with dbt.
+- Do not include CREATE, MODEL, or other non-BigQuery syntax.
 """
-            staging_sql = generate_sql_model(staging_prompt)
+            staging_sql = generate_sql_model(staging_prompt, model="sqlcoder:7b")
             with open(os.path.join(staging_path, f"stg_{table_name}.sql"), "w") as f:
                 f.write(staging_sql)
 
-            # --- Mart model via Gemma ---
+            # --- Mart model prompt (strict) ---
             mart_prompt = f"""
 Generate a dbt SQL mart model for table {table_name}.
-It should select from {{ ref('stg_{table_name}') }} and be materialized as a table.
+Requirements:
+- Use {{ config(materialized='table') }} at the top.
+- Must be a single SELECT statement.
+- Select from {{ ref('stg_{table_name}') }} only.
+- Output only valid BigQuery SQL compatible with dbt.
+- Do not include CREATE, MODEL, WITH MODEL, or any non-BigQuery syntax.
 """
-            marts_sql = generate_sql_model(mart_prompt)
+            marts_sql = generate_sql_model(mart_prompt, model="sqlcoder:7b")
             with open(os.path.join(marts_path, f"{table_name}_mart.sql"), "w") as f:
                 f.write(marts_sql)
 
@@ -76,6 +81,6 @@ It should select from {{ ref('stg_{table_name}') }} and be materialized as a tab
         with open(os.path.join(base_path, "schema.yml"), "w") as f:
             yaml.dump(schema_dict, f, sort_keys=False)
 
-        return "✅ dbt models and schema.yml generated successfully using Gemma via Ollama (with cleanup + Jinja validation)."
+        return "✅ dbt models and schema.yml generated successfully using SQLCoder via Ollama (strict prompts)."
     except Exception as e:
         return f"❌ Failed to generate dbt files: {str(e)}"

@@ -1,18 +1,7 @@
 {{ config(materialized='view') }}
 
-model customers_mart
-{
-    name: 'customers_mart',
-    description: 'Mart model for customers',
-    sources: [
-        {
-            name: 'customers_stage',
-            table: ref('stg_customers'),
-            transform: 'identity'
-        }
-    ],
-    materialized: {
-        type: 'table',
-        table: 'customers'
-    }
-}
+- Do not output any comments (--).
+'''
+from dbt.utils import check_env_var, check_dbt_var
+check_env_var(locals=['dev', 'prod'])
+check_dbt_var()

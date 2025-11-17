@@ -1,5 +1,5 @@
 {{ config(materialized='view') }}
 
-with openconfig(materialized="table") as f:
-    = SELECT stg_orders.order_id, stg_orders.customer_email FROM ref('stg_orders') AS stg_orders
-print(high.to_postgres_sql())
+SELECT
+    order_id, customer_id, order_date, total_amount
+FROM {{ source('dbt_vlakhmapurkar', 'orders') }}

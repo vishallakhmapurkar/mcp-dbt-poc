@@ -1,23 +1,33 @@
 import os
 import yaml
+import subprocess
+
+def generate_sql_model(prompt: str, model: str = "gemma"):
+    """
+    Calls Ollama with Gemma to generate SQL model code from a natural language prompt.
+    """
+    result = subprocess.run(
+        ["ollama", "run", model],
+        input=prompt.encode("utf-8"),
+        capture_output=True,
+    )
+    return result.stdout.decode("utf-8")
 
 def generate_dbt_files(spec, base_path="dbt_project/models"):
     try:
         os.makedirs(base_path, exist_ok=True)
-
-        # Create folders for staging and marts
         staging_path = os.path.join(base_path, "staging")
         marts_path = os.path.join(base_path, "marts")
         os.makedirs(staging_path, exist_ok=True)
         os.makedirs(marts_path, exist_ok=True)
 
-        source_name = spec.get("source_name", "source")
+        source_name = spec.get("source_name", "dbt_vlakhmapurkar")
 
         # Collect schema.yml structure
         schema_dict = {"version": 2, "sources": [], "models": []}
         source_block = {
             "name": source_name,
-            "schema": source_name,  # <-- warehouse schema name
+            "schema": source_name,
             "tables": []
         }
 
@@ -25,26 +35,23 @@ def generate_dbt_files(spec, base_path="dbt_project/models"):
             table_name = table["name"]
             columns = table["columns"]
 
-            # --- Staging model ---
-            staging_sql = f"""
-{{{{ config(materialized='view') }}}}
-
-SELECT
-    {",\n    ".join([f"{col['name']} AS {col['name']}" for col in columns])}
-FROM {{{{ source('{source_name}', '{table_name}') }}}}
+            # --- Staging model via Gemma ---
+            staging_prompt = f"""
+Generate a dbt SQL staging model for table {table_name} with columns:
+{', '.join([c['name'] for c in columns])}.
+Use {{ config(materialized='view') }} and {{ source('{source_name}', '{table_name}') }}.
 """
+            staging_sql = generate_sql_model(staging_prompt)
             staging_file = os.path.join(staging_path, f"stg_{table_name}.sql")
             with open(staging_file, "w") as f:
                 f.write(staging_sql.strip())
 
-            # --- Mart model ---
-            marts_sql = f"""
-{{{{ config(materialized='table') }}}}
-
-SELECT
-    *
-FROM {{{{ ref('stg_{table_name}') }}}}
+            # --- Mart model via Gemma ---
+            mart_prompt = f"""
+Generate a dbt SQL mart model for table {table_name}.
+It should select from {{ ref('stg_{table_name}') }} and be materialized as a table.
 """
+            marts_sql = generate_sql_model(mart_prompt)
             marts_file = os.path.join(marts_path, f"{table_name}_mart.sql")
             with open(marts_file, "w") as f:
                 f.write(marts_sql.strip())
@@ -67,8 +74,6 @@ FROM {{{{ ref('stg_{table_name}') }}}}
         with open(schema_file, "w") as f:
             yaml.dump(schema_dict, f, sort_keys=False)
 
-        return "✅ dbt models and schema.yml generated successfully with schema 'dbt_vlakhmapurkar'."
+        return "✅ dbt models and schema.yml generated successfully using Gemma via Ollama."
     except Exception as e:
         return f"❌ Failed to generate dbt files: {str(e)}"
-
-

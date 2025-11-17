@@ -1,5 +1,5 @@
-{{ config(materialized='table') }}
-
-SELECT
-    *
-FROM {{ ref('stg_orders') }}
+```sql
+CREATE MATERIALIZED VIEW {{ model_name }} AS
+SELECT *
+FROM { ref('stg_orders') };
+```

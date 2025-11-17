@@ -1,8 +1,14 @@
-{{ config(materialized='view') }}
+```sql
+with staged_products as (
+    select
+        product_id,
+        product_name,
+        category,
+        price
+    from { source('dbt_vlakhmapurkar', 'products') }
+)
 
-SELECT
-    product_id AS product_id,
-    product_name AS product_name,
-    category AS category,
-    price AS price
-FROM {{ source('dbt_vlakhmapurkar', 'products') }}
+select *
+from staged_products
+{ config(materialized='view') }
+```

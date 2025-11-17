@@ -1,5 +1,7 @@
-{{ config(materialized='table') }}
-
-SELECT
-    *
-FROM {{ ref('stg_products') }}
+```sql
+model products_mart
+{
+    select *
+    from { ref('stg_products') }
+}
+```

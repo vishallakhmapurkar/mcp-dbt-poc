@@ -1,0 +1,1 @@
+-- SQL for products (generated earlier)

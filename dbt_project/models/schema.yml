@@ -1,21 +1,20 @@
 version: 2
-sources:
-- name: dbt_vlakhmapurkar
-  schema: dbt_vlakhmapurkar
-  tables:
-  - name: orders
-  - name: customers
-  - name: products
+sources: []
 models:
-- name: stg_orders
+- name: orders_staging
   description: Staging model for orders
-- name: orders_mart
-  description: Mart model for orders
-- name: stg_customers
-  description: Staging model for customers
-- name: customers_mart
-  description: Mart model for customers
-- name: stg_products
-  description: Staging model for products
-- name: products_mart
-  description: Mart model for products
+  columns:
+  - name: order_id
+    tests:
+    - unique
+    - not_null
+  - name: customer_id
+    tests:
+    - unique
+    - not_null
+  - name: order_date
+    tests:
+    - not_null
+  - name: total_amount
+    tests:
+    - not_null
